@@ -398,10 +398,10 @@ body.light .org-card.leader .org-role { color: #b8860b; }
   --mobile-card-leader: 260px;
   --mobile-card-sub: 200px;
 
-  .org-tree { gap: 12px; padding: 16px 0; align-items: center; }
+  .org-tree { gap: 0; padding: 16px 0; align-items: center; }
 
   /* Lv1: 회장 + 커뮤니케이션 */
-  .tree-top { flex-direction: column; gap: 10px; align-items: center; }
+  .tree-top { flex-direction: column; gap: 10px; align-items: center; margin-bottom: 32px; }
   /* 회장 — 리더 카드 크기 */
   .tree-top .org-card.leader { width: 260px; }
   /* 커뮤니케이션(aux) — 서브 카드 크기 (기획/홍보/총무/정보와 동일) */
@@ -412,7 +412,15 @@ body.light .org-card.leader .org-role { color: #b8860b; }
   }
   .tree-top .aux-link { display: none; }
 
-  .tree-connector { display: none; }
+  /* 회장 섹션과 부회장 섹션 사이 구분선 */
+  .tree-connector {
+    display: block;
+    width: 80%;
+    height: 1px;
+    background: var(--border-glass);
+    margin-bottom: 32px;
+  }
+  .tree-connector .v-line { display: none; }
 
   /* Lv2: 부회장/재무국장 */
   .tree-row {
