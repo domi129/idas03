@@ -394,60 +394,49 @@ body.light .org-card.leader .org-role { color: #b8860b; }
 .org-advisory-grid .org-card { width: 200px; }
 
 @media (max-width: 1100px) {
-  /* 모바일/태블릿 포트레이트에서 조직도는 세로 스택으로 풀어줌 */
-  /* org-tree 전체에 일관된 세로 간격 부여 */
-  .org-tree { gap: 20px; padding: 16px 0; }
+  /* 공통: 모든 카드 동일 너비 */
+  --mobile-card-leader: 260px;
+  --mobile-card-sub: 200px;
+
+  .org-tree { gap: 12px; padding: 16px 0; align-items: center; }
 
   /* Lv1: 회장 + 커뮤니케이션 */
-  .tree-top { flex-direction: column; gap: 14px; align-items: center; }
-  /* 회장 — 위계 최상단, 가장 큰 카드 */
-  .tree-top .org-card.leader { width: 100%; max-width: 300px; }
-  /* 김주희 (aux) — 보조 역할, 작게 */
-  .tree-top .org-card.aux { width: 100%; max-width: 200px; }
+  .tree-top { flex-direction: column; gap: 10px; align-items: center; }
+  /* 회장 — 리더 카드 크기 */
+  .tree-top .org-card.leader { width: 260px; }
+  /* 커뮤니케이션(aux) — 서브 카드 크기 (기획/홍보/총무/정보와 동일) */
+  .tree-top .org-card.aux { width: 200px; padding: 14px 12px; }
   .tree-top .aux-wrap {
-    position: static;
-    left: auto; top: auto;
-    transform: none;
-    margin-top: 0;
-    width: auto;
+    position: static; left: auto; top: auto;
+    transform: none; margin-top: 0; width: auto;
   }
   .tree-top .aux-link { display: none; }
 
-  /* 회장→부회장 세로 연결선은 모바일에서 제거 */
   .tree-connector { display: none; }
 
   /* Lv2: 부회장/재무국장 */
   .tree-row {
-    flex-direction: column;
-    align-items: center;
-    gap: 20px;
-    padding-bottom: 0;
-    width: 100%;
-    max-width: 260px;
+    flex-direction: column; align-items: center;
+    gap: 12px; padding-bottom: 0; width: 100%;
   }
   .tree-row::before { display: none; }
-  .tree-branch {
-    width: 100%;
-    max-width: 260px;
-    padding-top: 0;
-  }
+
+  .tree-branch { width: 260px; padding-top: 0; }
   .tree-branch::before { display: none; }
-  /* 부회장/재무국장 leader — 회장보다 작게 */
-  .tree-branch > .org-card.leader { width: 100%; max-width: 260px; }
+  /* 부회장/재무국장 — 회장과 동일한 리더 카드 크기 */
+  .tree-branch > .org-card.leader { width: 260px; }
+
   .tree-branch .children {
-    position: static;
-    transform: none;
-    flex-direction: column;
-    align-items: center;
-    gap: 10px;
-    margin-top: 14px;
-    width: 100%;
+    position: static; transform: none;
+    flex-direction: column; align-items: center;
+    gap: 8px; margin-top: 10px; width: 100%;
   }
   .tree-branch .children::before, .tree-branch .children::after { display: none; }
   .tree-branch .children .org-card.sub::before { display: none; }
-  /* sub 카드 — 위계 최하단, 가장 작게 */
-  .tree-branch .children .org-card.sub { width: 100%; max-width: 220px; }
-  /* stacked 변형도 모바일에서는 단일 컬럼으로 풀어줌 */
+  /* 기획/홍보/총무/정보 — 서브 카드 크기 (커뮤니케이션과 동일) */
+  .tree-branch .children .org-card.sub { width: 200px; }
+
+  /* stacked 변형 */
   .tree-branch .children.stacked { gap: 8px; }
   .tree-branch .children.stacked .sub-row {
     flex-direction: column; align-items: center;
@@ -455,6 +444,9 @@ body.light .org-card.leader .org-role { color: #b8860b; }
   }
   .tree-branch .children.stacked .sub-row::before,
   .tree-branch .children.stacked .sub-row::after { display: none; }
+
+  /* 자문단 */
+  .org-advisory-grid .org-card { width: 200px; }
 }
 /* ===== Stats ===== */
 .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; }
