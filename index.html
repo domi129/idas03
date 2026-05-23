@@ -393,64 +393,52 @@ body.light .org-card.leader .org-role { color: #b8860b; }
 .org-advisory-grid { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
 .org-advisory-grid .org-card { width: 200px; }
 
-@media (max-width: 760px) {
-  .org-tree { align-items: stretch; padding: 10px 0; }
-
-  .tree-top {
-    flex-direction: column; align-items: center; gap: 12px;
-  }
-  .tree-top .org-card.leader { width: 100%; max-width: 280px; }
+@media (max-width: 900px) {
+  /* 모바일/태블릿 포트레이트에서 조직도는 세로 스택으로 풀어줌 */
+  .tree-top { flex-direction: column; gap: 12px; align-items: center; }
+  .tree-top .org-card.leader { width: 100%; max-width: 240px; }
   .tree-top .aux-wrap {
-    position: static; transform: none;
-    justify-content: center;
+    position: static;
+    left: auto; top: auto;
+    transform: none;
+    margin-top: 0;
   }
   .tree-top .aux-link { display: none; }
-  .tree-top .org-card.aux { width: 100%; max-width: 200px; }
-
-  .tree-connector .v-line { height: 20px; }
-
   .tree-row {
-    flex-direction: column; align-items: center; gap: 28px;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
     padding-bottom: 0;
+    width: 100%;
+    max-width: 280px;
   }
   .tree-row::before { display: none; }
-
   .tree-branch {
-    width: 100%; max-width: 300px; padding-top: 0;
-    display: flex; flex-direction: column; align-items: center;
+    width: 100%;
+    max-width: 280px;
+    padding-top: 0;
   }
   .tree-branch::before { display: none; }
-  .tree-branch .org-card.leader { width: 100%; }
-
   .tree-branch .children {
-    position: static; transform: none;
-    flex-direction: row; flex-wrap: wrap; justify-content: center;
-    gap: 10px; margin-top: 14px; width: 100%;
+    position: static;
+    transform: none;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    margin-top: 16px;
+    width: 100%;
   }
-  .tree-branch .children::before,
-  .tree-branch .children::after { display: none; }
-  .tree-branch .children .org-card.sub {
-    width: calc(50% - 5px); max-width: 140px;
-  }
+  .tree-branch .children::before, .tree-branch .children::after { display: none; }
   .tree-branch .children .org-card.sub::before { display: none; }
-
-  /* stacked 변형 */
-  .tree-branch .children.stacked {
-    flex-direction: row; flex-wrap: wrap; gap: 10px;
-  }
+  .tree-branch .children .org-card.sub { width: 100%; max-width: 240px; }
+  /* stacked 변형도 모바일에서는 단일 컬럼으로 풀어줌 */
+  .tree-branch .children.stacked { gap: 8px; }
   .tree-branch .children.stacked .sub-row {
-    display: contents; padding-top: 0;
+    flex-direction: column; align-items: center;
+    gap: 8px; padding-top: 0; width: 100%;
   }
   .tree-branch .children.stacked .sub-row::before,
   .tree-branch .children.stacked .sub-row::after { display: none; }
-  .tree-branch .children.stacked .sub-row .org-card.sub {
-    width: calc(50% - 5px); max-width: 140px;
-  }
-
-  /* 자문단 */
-  .org-advisory-wrap { margin-top: 24px; }
-  .org-advisory-grid { gap: 10px; }
-  .org-advisory-grid .org-card { width: calc(50% - 5px); max-width: 160px; }
 }
 /* ===== Stats ===== */
 .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; }
