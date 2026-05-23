@@ -393,44 +393,60 @@ body.light .org-card.leader .org-role { color: #b8860b; }
 .org-advisory-grid { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
 .org-advisory-grid .org-card { width: 200px; }
 
-@media (max-width: 900px) {
+@media (max-width: 1100px) {
   /* 모바일/태블릿 포트레이트에서 조직도는 세로 스택으로 풀어줌 */
-  .tree-top { flex-direction: column; gap: 12px; align-items: center; }
-  .tree-top .org-card.leader { width: 100%; max-width: 240px; }
+  /* org-tree 전체에 일관된 세로 간격 부여 */
+  .org-tree { gap: 20px; padding: 16px 0; }
+
+  /* Lv1: 회장 + 커뮤니케이션 */
+  .tree-top { flex-direction: column; gap: 14px; align-items: center; }
+  /* 회장 — 위계 최상단, 가장 큰 카드 */
+  .tree-top .org-card.leader { width: 100%; max-width: 300px; }
+  /* 김주희 (aux) — 보조 역할, 작게 */
+  .tree-top .org-card.aux { width: 100%; max-width: 200px; }
   .tree-top .aux-wrap {
     position: static;
     left: auto; top: auto;
     transform: none;
     margin-top: 0;
+    width: auto;
   }
   .tree-top .aux-link { display: none; }
+
+  /* 회장→부회장 세로 연결선은 모바일에서 제거 */
+  .tree-connector { display: none; }
+
+  /* Lv2: 부회장/재무국장 */
   .tree-row {
     flex-direction: column;
     align-items: center;
-    gap: 24px;
+    gap: 20px;
     padding-bottom: 0;
     width: 100%;
-    max-width: 280px;
+    max-width: 260px;
   }
   .tree-row::before { display: none; }
   .tree-branch {
     width: 100%;
-    max-width: 280px;
+    max-width: 260px;
     padding-top: 0;
   }
   .tree-branch::before { display: none; }
+  /* 부회장/재무국장 leader — 회장보다 작게 */
+  .tree-branch > .org-card.leader { width: 100%; max-width: 260px; }
   .tree-branch .children {
     position: static;
     transform: none;
     flex-direction: column;
     align-items: center;
-    gap: 8px;
-    margin-top: 16px;
+    gap: 10px;
+    margin-top: 14px;
     width: 100%;
   }
   .tree-branch .children::before, .tree-branch .children::after { display: none; }
   .tree-branch .children .org-card.sub::before { display: none; }
-  .tree-branch .children .org-card.sub { width: 100%; max-width: 240px; }
+  /* sub 카드 — 위계 최하단, 가장 작게 */
+  .tree-branch .children .org-card.sub { width: 100%; max-width: 220px; }
   /* stacked 변형도 모바일에서는 단일 컬럼으로 풀어줌 */
   .tree-branch .children.stacked { gap: 8px; }
   .tree-branch .children.stacked .sub-row {
