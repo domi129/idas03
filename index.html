@@ -1,0 +1,937 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IDAS 3기 · 원우회</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after { margin:0; padding:0; box-sizing:border-box; }
+:root {
+  --ink: #0A0A14;
+  --ink-soft: #1A1A2E;
+  --paper: #F5F1EA;
+  --c1: #FF6B9D;
+  --c2: #6C63FF;
+  --c3: #00D2FF;
+  --c4: #FFD93D;
+  --c5: #FF8E53;
+  --glass: rgba(255,255,255,0.08);
+  --glass-strong: rgba(255,255,255,0.14);
+  --border-glass: rgba(255,255,255,0.18);
+  --radius: 24px;
+  --radius-sm: 14px;
+}
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Pretendard','Space Grotesk',-apple-system,BlinkMacSystemFont,sans-serif;
+  background: var(--ink);
+  color: #fff;
+  min-height: 100vh;
+  overflow-x: hidden;
+  position: relative;
+}
+/* ===== Mesh Gradient Background ===== */
+.mesh-bg {
+  position: fixed; inset: 0; z-index: -2; overflow: hidden;
+  background: var(--ink);
+}
+.blob {
+  position: absolute; border-radius: 50%; filter: blur(100px); opacity: 0.55;
+  animation: float 20s ease-in-out infinite;
+}
+.blob-1 { width: 600px; height: 600px; background: var(--c1); top: -10%; left: -10%; }
+.blob-2 { width: 500px; height: 500px; background: var(--c2); top: 30%; right: -10%; animation-delay: -5s; }
+.blob-3 { width: 450px; height: 450px; background: var(--c3); bottom: -10%; left: 30%; animation-delay: -10s; }
+.blob-4 { width: 350px; height: 350px; background: var(--c4); top: 60%; left: 5%; animation-delay: -15s; opacity: 0.35; }
+@keyframes float {
+  0%,100% { transform: translate(0,0) scale(1); }
+  33% { transform: translate(50px,-30px) scale(1.1); }
+  66% { transform: translate(-30px,40px) scale(0.95); }
+}
+
+/* Grain noise overlay */
+.noise {
+  position: fixed; inset: 0; z-index: -1; pointer-events: none; opacity: 0.06;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* ===== Light mode ===== */
+body.light { background: var(--paper); color: var(--ink); }
+body.light .mesh-bg { background: var(--paper); }
+body.light .blob { opacity: 0.45; }
+body.light .glass { background: rgba(255,255,255,0.6); border-color: rgba(0,0,0,0.08); }
+body.light .glass-strong { background: rgba(255,255,255,0.8); }
+body.light .text-muted { color: rgba(10,10,20,0.6); }
+body.light .nav-pill { background: rgba(255,255,255,0.6); color: var(--ink); }
+body.light .nav-pill.active { background: var(--ink); color: var(--paper); }
+body.light .search-input { background: rgba(255,255,255,0.7); color: var(--ink); border-color: rgba(0,0,0,0.1); }
+body.light .search-input::placeholder { color: rgba(10,10,20,0.4); }
+
+.container { max-width: 1280px; margin: 0 auto; padding: 24px; }
+.text-muted { color: rgba(255,255,255,0.55); }
+/* ===== Scroll Progress ===== */
+.scroll-progress {
+  position: fixed; top: 0; left: 0; height: 3px; width: 0%;
+  background: linear-gradient(90deg, var(--c1), var(--c2), var(--c3));
+  z-index: 999; transition: width 0.1s ease;
+}
+
+/* ===== Top Bar ===== */
+.topbar {
+  position: sticky; top: 0; z-index: 100;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 0; backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  margin-bottom: 24px;
+}
+.brand { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 1.1rem; }
+.brand-dot { width: 12px; height: 12px; border-radius: 50%; background: linear-gradient(135deg,var(--c1),var(--c2)); box-shadow: 0 0 20px var(--c1); }
+.theme-toggle {
+  width: 44px; height: 44px; border-radius: 50%;
+  background: var(--glass); border: 1px solid var(--border-glass);
+  color: inherit; cursor: pointer; font-size: 1.1rem;
+  display: flex; align-items: center; justify-content: center;
+  transition: transform 0.3s, background 0.3s;
+}
+.theme-toggle:hover { transform: rotate(20deg) scale(1.1); background: var(--glass-strong); }
+
+/* ===== Hero ===== */
+.hero { padding: 60px 0 40px; position: relative; }
+.hero-tag {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 8px 16px; border-radius: 100px;
+  background: var(--glass); border: 1px solid var(--border-glass);
+  font-size: 0.8rem; font-weight: 600; letter-spacing: 1px;
+  margin-bottom: 24px;
+}
+.hero-tag .dot { width: 8px; height: 8px; border-radius: 50%; background: #00ff88; box-shadow: 0 0 10px #00ff88; animation: pulse 2s infinite; }
+@keyframes pulse { 50% { opacity: 0.5; } }
+
+.hero h1 {
+  font-size: clamp(3rem, 9vw, 7rem);
+  font-weight: 900; line-height: 0.95; letter-spacing: -0.04em;
+  margin-bottom: 24px;
+}
+.hero h1 .accent {
+  background: linear-gradient(135deg, var(--c1), var(--c4), var(--c3));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+  display: inline-block;
+}
+.hero h1 .italic { font-style: italic; font-family: 'Space Grotesk',serif; }
+.hero-sub { font-size: clamp(1rem, 2vw, 1.3rem); max-width: 600px; line-height: 1.5; }
+
+.hero-stats {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px;
+  margin-top: 60px; padding: 32px 0;
+  border-top: 1px solid var(--border-glass);
+  border-bottom: 1px solid var(--border-glass);
+}
+.hero-stat .num {
+  font-family: 'Space Grotesk'; font-size: clamp(2rem, 5vw, 3.5rem);
+  font-weight: 700; line-height: 1; letter-spacing: -0.03em;
+}
+.hero-stat .label { font-size: 0.85rem; opacity: 0.6; margin-top: 8px; letter-spacing: 1px; text-transform: uppercase; }
+/* ===== Glass Card Base ===== */
+.glass {
+  background: var(--glass);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius);
+}
+.glass-strong { background: var(--glass-strong); }
+
+/* ===== Nav Pills ===== */
+.nav-wrap {
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 16px; margin-bottom: 32px;
+}
+.nav-pills { display: flex; gap: 6px; padding: 6px; border-radius: 100px; }
+.nav-pill {
+  padding: 10px 20px; border: none; border-radius: 100px;
+  background: transparent; color: rgba(255,255,255,0.7);
+  font-size: 0.9rem; font-weight: 600; cursor: pointer;
+  transition: all 0.3s ease; white-space: nowrap;
+  font-family: inherit;
+}
+.nav-pill:hover { color: #fff; }
+.nav-pill.active {
+  background: #fff; color: var(--ink);
+  box-shadow: 0 4px 20px rgba(255,255,255,0.2);
+}
+
+/* ===== Search ===== */
+.search-wrap { position: relative; flex: 1; max-width: 320px; min-width: 200px; }
+.search-input {
+  width: 100%; padding: 12px 18px 12px 44px;
+  background: var(--glass); border: 1px solid var(--border-glass);
+  border-radius: 100px; color: inherit; font-size: 0.9rem;
+  font-family: inherit; outline: none; transition: all 0.3s;
+}
+.search-input::placeholder { color: rgba(255,255,255,0.4); }
+.search-input:focus { border-color: var(--c1); background: var(--glass-strong); }
+.search-icon {
+  position: absolute; left: 16px; top: 50%; transform: translateY(-50%);
+  opacity: 0.5; pointer-events: none;
+}
+
+/* ===== Tab Panels ===== */
+.tab-panel { display: none; animation: fadeUp 0.5s ease; }
+.tab-panel.active { display: block; }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+.section-title {
+  display: flex; align-items: baseline; gap: 16px;
+  margin: 24px 0 24px;
+  font-size: 1.4rem; font-weight: 800;
+}
+.section-title .count {
+  font-family: 'Space Grotesk'; font-size: 0.9rem; font-weight: 500;
+  padding: 4px 12px; border-radius: 100px;
+  background: var(--glass); border: 1px solid var(--border-glass);
+}
+/* ===== Member Cards ===== */
+.member-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
+.member-card {
+  position: relative; padding: 20px; border-radius: var(--radius-sm);
+  background: var(--glass); border: 1px solid var(--border-glass);
+  cursor: pointer; transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: hidden;
+}
+.member-card::before {
+  content: ''; position: absolute; inset: 0;
+  background: radial-gradient(circle at var(--mx,50%) var(--my,50%), rgba(255,255,255,0.15), transparent 50%);
+  opacity: 0; transition: opacity 0.3s; pointer-events: none;
+}
+.member-card:hover { transform: translateY(-6px); border-color: rgba(255,255,255,0.4); background: var(--glass-strong); }
+.member-card:hover::before { opacity: 1; }
+.avatar {
+  width: 48px; height: 48px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 1.1rem; color: #fff;
+  margin-bottom: 14px; letter-spacing: -0.5px;
+}
+.card-name { font-size: 1.05rem; font-weight: 700; margin-bottom: 4px; letter-spacing: -0.5px; }
+.card-info { font-size: 0.8rem; opacity: 0.65; margin-bottom: 10px; line-height: 1.4; }
+.card-meta { display: flex; gap: 6px; flex-wrap: wrap; }
+.chip {
+  font-family: 'Space Grotesk'; font-size: 0.7rem; font-weight: 500;
+  padding: 3px 8px; border-radius: 100px;
+  background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15);
+  letter-spacing: 0.5px;
+}
+.chip.dept-1 { background: rgba(255,107,157,0.15); border-color: rgba(255,107,157,0.4); color: #ffb3cd; }
+.chip.dept-2 { background: rgba(0,210,255,0.15); border-color: rgba(0,210,255,0.4); color: #99ebff; }
+body.light .chip.dept-1 { color: #c41e6e; }
+body.light .chip.dept-2 { color: #006a85; }
+
+/* ===== Org Chart Tree ===== */
+.org-tree { display: flex; flex-direction: column; align-items: center; padding: 20px 0; }
+
+/* Lv1: 회장 정중앙 + 커뮤 absolute로 옆에 */
+.tree-top {
+  display: flex; justify-content: center; align-items: center;
+  position: relative;
+}
+.tree-top .org-card.leader { width: 240px; }
+
+.tree-top .aux-wrap {
+  position: absolute;
+  left: calc(50% + 120px); /* 회장 우측 끝에 정확히 붙도록 */
+  top: 50%; transform: translateY(-50%);
+  display: flex; align-items: center; gap: 0;
+  white-space: nowrap;
+}
+.tree-top .aux-link { width: 24px; height: 2px; background: var(--border-glass); }
+.tree-top .org-card.aux {
+  width: 150px; padding: 14px 12px;
+  background: rgba(255,255,255,0.04);
+}
+.tree-top .org-card.aux .org-name { font-size: 1rem; }
+
+/* 회장 → Lv2 세로 connector */
+.tree-connector {
+  display: flex; flex-direction: column; align-items: center;
+}
+.tree-connector .v-line { width: 2px; height: 28px; background: var(--border-glass); }
+
+/* Lv2 row: 부회장(head width) + gap + 재무국장(head width) */
+.tree-row {
+  display: flex; gap: 80px;
+  position: relative;
+  width: max-content;
+  padding-bottom: 160px; /* children absolute 영역 확보 */
+}
+/* 가로 연결선 (두 head 중앙 잇기) */
+.tree-row::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 120px;   /* head width(240)/2 */
+  right: 120px;
+  height: 2px; background: var(--border-glass);
+}
+
+/* Branch */
+.tree-branch {
+  width: 240px;
+  position: relative;
+  padding-top: 14px;
+}
+/* head 위 짧은 세로선 */
+.tree-branch::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 50%; transform: translateX(-50%);
+  width: 2px; height: 14px; background: var(--border-glass);
+}
+
+/* Children: head 아래 absolute로 띄움 */
+.tree-branch .children {
+  position: absolute;
+  top: calc(100% + 28px); /* head 끝 + connector 28px */
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex; gap: 10px;
+  width: max-content;
+}
+.tree-branch .children::before {
+  content: '';
+  position: absolute;
+  top: -28px; left: 50%; transform: translateX(-50%);
+  width: 2px; height: 14px; background: var(--border-glass);
+}
+.tree-branch .children::after {
+  content: '';
+  position: absolute;
+  top: -14px;
+  left: 65px; right: 65px;  /* card 130/2 */
+  height: 2px; background: var(--border-glass);
+}
+.tree-branch .children .org-card.sub {
+  width: 130px; padding: 14px 10px;
+  background: rgba(255,255,255,0.04);
+  position: relative;
+}
+.tree-branch .children .org-card.sub::before {
+  content: '';
+  position: absolute;
+  top: -14px; left: 50%; transform: translateX(-50%);
+  width: 2px; height: 14px; background: var(--border-glass);
+}
+.tree-branch .children .org-card.sub .org-name { font-size: 1rem; }
+/* 한 카드에 이름 2개일 때: 두 번째 이름 사이 살짝 간격 */
+.tree-branch .children .org-card.sub.multi .org-name + .org-name { margin-top: 2px; }
+
+/* ── 2x2 스택 레이아웃 (부회장처럼 자식이 4명일 때) ── */
+.tree-branch .children.stacked {
+  flex-direction: column;
+  gap: 28px;
+}
+/* 위쪽 vline을 row1 가로선까지 늘림 (14 → 28) */
+.tree-branch .children.stacked::before { height: 28px; }
+/* 기본 ::after 가로선(맨 위)은 숨김 — 각 row가 자체 가로선을 가짐 */
+.tree-branch .children.stacked::after { display: none; }
+
+.tree-branch .children.stacked .sub-row {
+  position: relative;
+  display: flex; gap: 10px;
+  padding-top: 14px;
+}
+/* 각 row 위에 가로 연결선 */
+.tree-branch .children.stacked .sub-row::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 65px; right: 65px;  /* card 130/2 */
+  height: 2px; background: var(--border-glass);
+}
+/* row1 가로선부터 row2 가로선까지 관통하는 중앙 vline */
+.tree-branch .children.stacked .sub-row:first-child::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: -28px;       /* row 간격(28px) 전체를 가로질러 row2 top까지 */
+  left: 50%; transform: translateX(-50%);
+  width: 2px; background: var(--border-glass);
+}
+
+/* Org card base */
+.org-card {
+  padding: 20px 18px; border-radius: var(--radius-sm);
+  background: var(--glass); border: 1px solid var(--border-glass);
+  transition: all 0.3s ease; text-align: center;
+}
+.org-card.leader {
+  background: linear-gradient(135deg, rgba(255,107,157,0.2), rgba(108,99,255,0.2));
+  border-color: rgba(255,107,157,0.5);
+}
+.org-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.2); }
+.org-role {
+  font-size: 0.7rem; font-weight: 700; letter-spacing: 1.5px;
+  color: var(--c1); margin-bottom: 6px;
+}
+body.light .org-role { color: #c41e6e; }
+.org-card.leader .org-role { color: var(--c4); }
+body.light .org-card.leader .org-role { color: #b8860b; }
+.org-name { font-size: 1.2rem; font-weight: 800; letter-spacing: -0.5px; }
+
+/* Advisory */
+.org-advisory-wrap { width: 100%; margin-top: 32px; }
+.org-advisory-title {
+  font-size: 0.8rem; font-weight: 700; letter-spacing: 2px; opacity: 0.5;
+  text-align: center; margin-bottom: 20px;
+  display: flex; align-items: center; gap: 12px; justify-content: center;
+}
+.org-advisory-title::before, .org-advisory-title::after {
+  content: ''; flex: 1; height: 1px; background: var(--border-glass);
+}
+.org-advisory-grid { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+.org-advisory-grid .org-card { width: 200px; }
+
+@media (max-width: 760px) {
+  .tree-top .aux-wrap {
+    position: static; transform: none;
+    margin-top: 12px;
+  }
+  .tree-top { flex-direction: column; gap: 0; }
+  .tree-top .aux-link { display: none; }
+  .tree-row { flex-direction: column; align-items: center; gap: 32px; padding-bottom: 0; }
+  .tree-row::before { display: none; }
+  .tree-branch { width: 100%; max-width: 280px; padding-top: 0; }
+  .tree-branch::before { display: none; }
+  .tree-branch .children {
+    position: static; transform: none;
+    flex-direction: column; align-items: center; gap: 8px;
+    margin-top: 12px;
+  }
+  .tree-branch .children::before, .tree-branch .children::after { display: none; }
+  .tree-branch .children .org-card.sub::before { display: none; }
+  .tree-branch .children .org-card.sub { width: 100%; max-width: 240px; }
+  /* stacked 변형도 모바일에서는 단일 컬럼으로 풀어줌 */
+  .tree-branch .children.stacked { gap: 8px; }
+  .tree-branch .children.stacked .sub-row {
+    flex-direction: column; align-items: center;
+    gap: 8px; padding-top: 0; width: 100%;
+  }
+  .tree-branch .children.stacked .sub-row::before,
+  .tree-branch .children.stacked .sub-row::after { display: none; }
+}
+/* ===== Stats ===== */
+.stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; }
+.stat-block {
+  padding: 28px; border-radius: var(--radius);
+  background: var(--glass); border: 1px solid var(--border-glass);
+}
+.stat-block-head { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; }
+.stat-emoji { font-size: 1.8rem; }
+.stat-block-title { font-size: 1rem; font-weight: 700; }
+.bar-row { display: grid; grid-template-columns: 110px 1fr 50px; align-items: center; gap: 12px; margin-bottom: 14px; font-size: 0.85rem; }
+.bar-row .label { opacity: 0.85; }
+.bar-row .value { font-family: 'Space Grotesk'; font-weight: 700; text-align: right; }
+.bar { height: 10px; border-radius: 100px; background: rgba(255,255,255,0.08); overflow: hidden; position: relative; }
+.bar-fill { height: 100%; border-radius: 100px; width: 0; transition: width 1.2s cubic-bezier(0.16,1,0.3,1); }
+.bar-fill.g1 { background: linear-gradient(90deg, var(--c1), var(--c5)); }
+.bar-fill.g2 { background: linear-gradient(90deg, var(--c2), var(--c3)); }
+.bar-fill.g3 { background: linear-gradient(90deg, var(--c4), var(--c5)); }
+
+/* Donut */
+.donut-card { text-align: center; }
+.donut-wrap { position: relative; width: 200px; height: 200px; margin: 0 auto 20px; }
+.donut-center {
+  position: absolute; inset: 0; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+}
+.donut-center .big { font-family: 'Space Grotesk'; font-size: 2.5rem; font-weight: 700; line-height: 1; }
+.donut-center .small { font-size: 0.75rem; opacity: 0.6; margin-top: 4px; }
+.donut-legend { display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; }
+.donut-legend > div { display: flex; align-items: center; gap: 6px; font-size: 0.85rem; }
+.legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+
+/* ===== Interest Cards ===== */
+.interest-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+.interest-card {
+  padding: 24px; border-radius: var(--radius-sm); position: relative; overflow: hidden;
+  background: var(--glass); border: 1px solid var(--border-glass);
+  transition: all 0.4s cubic-bezier(0.16,1,0.3,1); cursor: pointer;
+}
+.interest-card:hover { transform: translateY(-6px) scale(1.02); border-color: rgba(255,255,255,0.4); }
+.interest-card .emoji { font-size: 2.5rem; margin-bottom: 12px; display: block; }
+.interest-card .title { font-size: 1.3rem; font-weight: 800; letter-spacing: -0.5px; }
+.interest-card .count {
+  font-family: 'Space Grotesk'; font-size: 0.85rem; font-weight: 700;
+  background: linear-gradient(135deg, var(--c1), var(--c4));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 14px;
+}
+.interest-card .members { font-size: 0.78rem; line-height: 1.7; opacity: 0.7; }
+/* ===== Modal ===== */
+.modal-bg {
+  position: fixed; inset: 0; z-index: 1000; display: none;
+  background: rgba(0,0,0,0.6); backdrop-filter: blur(8px);
+  align-items: center; justify-content: center; padding: 20px;
+  animation: fadeIn 0.3s ease;
+}
+.modal-bg.show { display: flex; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+.modal {
+  max-width: 500px; width: 100%; padding: 36px;
+  background: rgba(20,20,40,0.95); backdrop-filter: blur(40px);
+  border: 1px solid var(--border-glass); border-radius: var(--radius);
+  position: relative; animation: scaleIn 0.4s cubic-bezier(0.16,1,0.3,1);
+}
+body.light .modal { background: rgba(255,255,255,0.95); color: var(--ink); }
+@keyframes scaleIn { from { opacity: 0; transform: scale(0.92); } to { opacity: 1; transform: scale(1); } }
+.modal-close {
+  position: absolute; top: 16px; right: 16px;
+  width: 36px; height: 36px; border-radius: 50%;
+  background: var(--glass); border: 1px solid var(--border-glass);
+  color: inherit; cursor: pointer; font-size: 1.2rem;
+}
+.modal .avatar-lg { width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2rem; font-weight: 800; color: #fff; margin-bottom: 20px; }
+.modal h3 { font-size: 1.8rem; font-weight: 800; letter-spacing: -1px; margin-bottom: 6px; }
+.modal .modal-tag { display: inline-block; padding: 4px 12px; border-radius: 100px; font-size: 0.75rem; font-weight: 600; margin-bottom: 24px; }
+.modal-row { display: flex; padding: 12px 0; border-bottom: 1px solid var(--border-glass); font-size: 0.9rem; }
+.modal-row:last-of-type { border-bottom: none; }
+.modal-row .k { width: 90px; opacity: 0.6; flex-shrink: 0; }
+.modal-row .v { flex: 1; font-weight: 500; }
+.modal-quote { margin-top: 20px; padding: 16px; border-radius: var(--radius-sm); background: var(--glass); border-left: 3px solid var(--c1); font-size: 0.9rem; line-height: 1.6; font-style: italic; opacity: 0.85; }
+
+/* ===== Footer ===== */
+footer { margin: 80px 0 40px; padding: 40px 0; text-align: center; border-top: 1px solid var(--border-glass); font-size: 0.85rem; opacity: 0.5; }
+
+/* ===== Responsive ===== */
+@media (max-width: 768px) {
+  .container { padding: 16px; }
+  .hero { padding: 30px 0 20px; }
+  .hero-stats { grid-template-columns: repeat(2, 1fr); gap: 16px; padding: 24px 0; }
+  .nav-pills { width: 100%; overflow-x: auto; padding: 4px; }
+  .nav-pill { padding: 8px 14px; font-size: 0.8rem; }
+  .member-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; }
+  .member-card { padding: 14px; }
+  .avatar { width: 40px; height: 40px; font-size: 0.95rem; margin-bottom: 10px; }
+  .card-name { font-size: 0.95rem; }
+  .org-grid { grid-template-columns: 1fr; }
+  .modal { padding: 24px; }
+}
+
+/* ===== Empty state ===== */
+.empty {
+  padding: 60px 20px; text-align: center; opacity: 0.5; font-size: 0.95rem;
+  grid-column: 1 / -1;
+}
+</style>
+</head>
+<body>
+<div class="mesh-bg">
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+  <div class="blob blob-3"></div>
+  <div class="blob blob-4"></div>
+</div>
+<div class="noise"></div>
+<div class="scroll-progress" id="scrollProgress"></div>
+<div class="container">
+
+<div class="topbar">
+  <div class="brand"><span class="brand-dot"></span> IDAS<span style="opacity:0.5">/</span>3rd</div>
+  <button class="theme-toggle" id="themeToggle" aria-label="테마 변경">🌙</button>
+</div>
+
+<header class="hero">
+  <div class="hero-tag"><span class="dot"></span> 2026 전기 · 고려대학교</div>
+  <h1>안녕,<br>우리는 <span class="accent">3기.</span></h1>
+  <p class="hero-sub text-muted">고려대학교 융합데이터과학대학원 석사과정<br>45명의 원우가 모였습니다.</p>
+  <div class="hero-stats">
+    <div class="hero-stat"><div class="num" data-count="45">0</div><div class="label">Members</div></div>
+    <div class="hero-stat"><div class="num" data-count="2">0</div><div class="label">학과</div></div>
+    <div class="hero-stat"><div class="num" data-count="28">0</div><div class="label">기업</div></div>
+    <div class="hero-stat"><div class="num" data-count="18">0</div><div class="label">관심사</div></div>
+  </div>
+</header>
+
+<div class="nav-wrap">
+  <div class="nav-pills glass">
+    <button class="nav-pill active" data-tab="directory">멤버</button>
+    <button class="nav-pill" data-tab="org">조직도</button>
+    <button class="nav-pill" data-tab="stats">통계</button>
+    <button class="nav-pill" data-tab="interests">관심사</button>
+  </div>
+  <div class="search-wrap" id="searchWrap">
+    <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+    <input type="text" class="search-input" id="searchInput" placeholder="이름 · 직장 · 직무 검색...">
+  </div>
+</div>
+
+<main>
+<!-- 멤버 탭 -->
+<section id="directory" class="tab-panel active">
+  <div class="section-title">융합데이터과학과 <span class="count" id="dept1Count">29</span></div>
+  <div class="member-grid" id="dept1Grid"></div>
+  <div class="section-title" style="margin-top:48px;">AI 데이터사이언스학과 <span class="count" id="dept2Count">16</span></div>
+  <div class="member-grid" id="dept2Grid"></div>
+</section>
+<!-- 조직도 탭 -->
+<section id="org" class="tab-panel">
+  <div class="org-tree">
+
+    <!-- Lv1: 회장 정중앙 + 커뮤 absolute로 옆에 -->
+    <div class="tree-top">
+      <div class="org-card leader">
+        <div class="org-role">회장</div>
+        <div class="org-name">송원석</div>
+      </div>
+      <div class="aux-wrap">
+        <div class="aux-link"></div>
+        <div class="org-card aux">
+          <div class="org-role">커뮤니케이션</div>
+          <div class="org-name">김주희</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 회장 → Lv2 세로 연결 -->
+    <div class="tree-connector"><div class="v-line"></div></div>
+
+    <!-- Lv2: 부회장 / 재무국장 -->
+    <div class="tree-row">
+
+      <!-- 부회장 + 집행부 -->
+      <div class="tree-branch">
+        <div class="org-card leader">
+          <div class="org-role">부회장</div>
+          <div class="org-name">권동인</div>
+        </div>
+        <div class="children">
+          <div class="org-card sub multi">
+            <div class="org-role">기획</div>
+            <div class="org-name">조연진</div>
+            <div class="org-name">허수정</div>
+          </div>
+          <div class="org-card sub multi">
+            <div class="org-role">홍보</div>
+            <div class="org-name">이유나</div>
+            <div class="org-name">진유리</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 재무국장 + 운영부 -->
+      <div class="tree-branch">
+        <div class="org-card leader">
+          <div class="org-role">재무국장</div>
+          <div class="org-name">용상혁</div>
+        </div>
+        <div class="children">
+          <div class="org-card sub">
+            <div class="org-role">총무</div>
+            <div class="org-name">전민호</div>
+          </div>
+          <div class="org-card sub">
+            <div class="org-role">정보</div>
+            <div class="org-name">김준규</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- 자문단 -->
+    <div class="org-advisory-wrap">
+      <div class="org-advisory-title">자문단</div>
+      <div class="org-advisory-grid">
+        <div class="org-card">
+          <div class="org-role">고문</div>
+          <div class="org-name">성기석</div>
+        </div>
+        <div class="org-card">
+          <div class="org-role">감사</div>
+          <div class="org-name">김광연</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+<!-- 통계 탭 -->
+<section id="stats" class="tab-panel">
+  <div class="stats-grid">
+    <div class="stat-block donut-card">
+      <div class="stat-block-head"><span class="stat-emoji">🎓</span><div class="stat-block-title">학과 비율</div></div>
+      <div class="donut-wrap">
+        <svg width="200" height="200" viewBox="0 0 200 200">
+          <circle cx="100" cy="100" r="80" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="24"/>
+          <circle id="donutSeg1" cx="100" cy="100" r="80" fill="none" stroke="url(#g1)" stroke-width="24" stroke-dasharray="0 1000" stroke-linecap="round" transform="rotate(-90 100 100)"/>
+          <defs>
+            <linearGradient id="g1" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#FF6B9D"/><stop offset="100%" stop-color="#FF8E53"/>
+            </linearGradient>
+          </defs>
+        </svg>
+        <div class="donut-center"><div class="big">45</div><div class="small">TOTAL</div></div>
+      </div>
+      <div class="donut-legend">
+        <div><span class="legend-dot" style="background:linear-gradient(135deg,#FF6B9D,#FF8E53)"></span>융합데이터 29</div>
+        <div><span class="legend-dot" style="background:rgba(255,255,255,0.15)"></span>AI 데이터사이언스 16</div>
+      </div>
+    </div>
+
+    <div class="stat-block">
+      <div class="stat-block-head"><span class="stat-emoji">📅</span><div class="stat-block-title">연령대 분포</div></div>
+      <div class="bar-row"><span class="label">70년대</span><div class="bar"><div class="bar-fill g1" data-w="2"></div></div><span class="value">1</span></div>
+      <div class="bar-row"><span class="label">80년대</span><div class="bar"><div class="bar-fill g1" data-w="31"></div></div><span class="value">14</span></div>
+      <div class="bar-row"><span class="label">90년대</span><div class="bar"><div class="bar-fill g1" data-w="60"></div></div><span class="value">27</span></div>
+      <div class="bar-row"><span class="label">00년대</span><div class="bar"><div class="bar-fill g1" data-w="7"></div></div><span class="value">3</span></div>
+    </div>
+
+    <div class="stat-block">
+      <div class="stat-block-head"><span class="stat-emoji">🏢</span><div class="stat-block-title">산업군 TOP 5</div></div>
+      <div class="bar-row"><span class="label">IT/SW</span><div class="bar"><div class="bar-fill g2" data-w="80"></div></div><span class="value">16</span></div>
+      <div class="bar-row"><span class="label">제조/에너지</span><div class="bar"><div class="bar-fill g2" data-w="25"></div></div><span class="value">5</span></div>
+      <div class="bar-row"><span class="label">금융</span><div class="bar"><div class="bar-fill g2" data-w="20"></div></div><span class="value">4</span></div>
+      <div class="bar-row"><span class="label">컨설팅</span><div class="bar"><div class="bar-fill g2" data-w="20"></div></div><span class="value">4</span></div>
+      <div class="bar-row"><span class="label">유통/커머스</span><div class="bar"><div class="bar-fill g2" data-w="15"></div></div><span class="value">3</span></div>
+    </div>
+
+    <div class="stat-block">
+      <div class="stat-block-head"><span class="stat-emoji">💼</span><div class="stat-block-title">직무 유형 TOP 5</div></div>
+      <div class="bar-row"><span class="label">개발/엔지니어</span><div class="bar"><div class="bar-fill g3" data-w="60"></div></div><span class="value">12</span></div>
+      <div class="bar-row"><span class="label">데이터분석</span><div class="bar"><div class="bar-fill g3" data-w="35"></div></div><span class="value">7</span></div>
+      <div class="bar-row"><span class="label">기획/전략</span><div class="bar"><div class="bar-fill g3" data-w="30"></div></div><span class="value">6</span></div>
+      <div class="bar-row"><span class="label">컨설팅</span><div class="bar"><div class="bar-fill g3" data-w="20"></div></div><span class="value">4</span></div>
+      <div class="bar-row"><span class="label">마케팅/영업</span><div class="bar"><div class="bar-fill g3" data-w="20"></div></div><span class="value">4</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- 관심사 탭 -->
+<section id="interests" class="tab-panel">
+  <div class="interest-grid" id="interestGrid"></div>
+</section>
+</main>
+
+<footer>
+  <div>IDAS 3rd · 2026</div>
+  <div style="margin-top:6px;">made with ✿ for our cohort</div>
+</footer>
+</div>
+<!-- Modal -->
+<div class="modal-bg" id="modalBg">
+  <div class="modal" id="modalContent"></div>
+</div>
+
+<script>
+// ===== Data =====
+const MEMBERS = [
+  // 융합데이터과학과
+  {n:'김민정',y:94,c:'IT 컨설팅',j:'AX 컨설턴트/변화관리 팀장',h:'여행, 영화, 개인소장용 브이로그',m:'바쁘신 와중에 모두 건강 잘 챙기시길 바랍니다.',d:1},
+  {n:'김소현',y:97,c:'나이스평가정보',j:'기업신용데이터 b2b세일즈',h:'독서, 와인',m:'좋은 분들과 함께 해서 기쁩니다!',d:1},
+  {n:'김요한',y:82,c:'KT',j:'HRD',h:'영화, 여행',m:'회사/업무 관련 정보 많이 나누었으면 좋겠습니다.',d:1},
+  {n:'김유진',y:92,c:'종근당',j:'임상통계, 임상자료관리',h:'강아지와 산책, 배드민턴',m:'좋은 인연으로 만나게 되어 반갑습니다.',d:1},
+  {n:'김재혁',y:91,c:'LG화학',j:'제약생산',h:'헬스, 골프, 요리',m:'두루두루 친해져서 네트워크 형성하고 싶습니다.',d:1},
+  {n:'김주희',y:93,c:'한국인터넷진흥원',j:'공인전자문서 중계자 인증심사',h:'러닝 등 각종 운동 & 먹거리 탐방',m:'점심때 맛있는거 많이 먹으러 다녀요!',d:1},
+  {n:'김준규',y:90,c:'삼양식품',j:'IT기획, 프로젝트 관리',h:'혼자 여행가서 돌아다니기',m:'3기 원우님들 모두 화이팅입니다!',d:1},
+  {n:'김태원',y:88,c:'Moreh',j:'IR, 투자유치, 사업개발',h:'여행, F1, 게임, 카드게임',m:'잘 부탁드려요. 반갑습니다.',d:1},
+  {n:'김한솔',y:84,c:'신한카드',j:'법인사업부',h:'산책, 독서, 키즈카페',m:'반갑습니다. 잘 부탁드립니다.',d:1},
+  {n:'박성천',y:89,c:'두산에너빌리티',j:'소프트웨어 엔지니어(V&V)',h:'산책, 잡지식 쌓기',m:'끝까지 완주하자구요!',d:1},
+  {n:'박성혁',y:95,c:'CJ 제일제당',j:'데이터분석, AI Engineer',h:'테니스, 축구, 수영',m:'지치지 않고 내년까지 화이팅 해요!',d:1},
+  {n:'박진석',y:95,c:'GS E&C',j:'화공플랜트 공정설계',h:'수영, 여행',m:'다양한 주제로 이야기 나누면서 친해져요!',d:1},
+  {n:'성기석',y:80,c:'삼성E&A',j:'Palantir 운영조직장',h:'미국주식, 운동, 음악, 넷플릭스',m:'네트워크 많이 하고싶어요!',d:1},
+  {n:'송원석',y:93,c:'쿠팡',j:'데이터분석(BA)',h:'야구, 테니스, 헬스, 메이플스토리',m:'기라성같은 동기분들과 인연을 맺게 되어 영광입니다!',d:1},
+  {n:'안동주',y:93,c:'셀렉트스타',j:'개발',h:'운동, 독서',m:'졸업 이후에도 이어나갔으면 좋겠습니다.',d:1},
+  {n:'오성민',y:88,c:'신한DS',j:'백엔드 개발자',h:'산책, 카페에서 독서나 쉼',m:'다같이 열심히 해보시죠!',d:1},
+  {n:'용상혁',y:92,c:'램리서치',j:'Software Engineer',h:'헬스, 러닝, 여행',m:'3기 원우님들 잘 부탁드려요.',d:1},
+  {n:'이서영',y:96,c:'신용보증기금',j:'보증/보험심사',h:'테니스, 헬스',m:'만나서 반갑습니다!',d:1},
+  {n:'이예솔',y:97,c:'개인사업',j:'마케팅',h:'요리, 피아노, 드라이브',m:'3기 원우님들 잘 부탁드립니다.',d:1},
+  {n:'이유나',y:98,c:'CRM 컨설팅',j:'데이터엔지니어링',h:'여행, 베이킹, 방탈출',m:'알찬 3기 생활 했으면 좋겠어요.',d:1},
+  {n:'이준범',y:92,c:'LG에너지솔루션',j:'공정개발',h:'와인, 러닝, 부동산 임장',m:'행복하고 즐거운 석사시절 보냈으면 해요.',d:1},
+  {n:'전민호',y:91,c:'KCB',j:'인증서비스 IT 개발 및 운영',h:'헬스, 야구, OTT',m:'만나 뵙게 되어 반갑습니다.',d:1},
+  {n:'정재연',y:95,c:'가톨릭대 중앙의료원',j:'전략기획',h:'테니스',m:'앞으로 잘 부탁드립니다!',d:1},
+  {n:'조연진',y:96,c:'신한카드',j:'마케팅 전략 데이터 분석',h:'여행, 베이스, 운동',m:'즐거운 대학원 생활 잘 부탁드려요.',d:1},
+  {n:'최종현',y:97,c:'LG전자',j:'전장품 품질 Engineer',h:'수영, 스포츠관람, 여행, 헬스',m:'동기분들과 인연을 맺게 되어 영광입니다!',d:1},
+  {n:'최지환',y:89,c:'디플래닉스',j:'데이터분석가',h:'게임, 야구, 미국주식, 육아',m:'좋은 동료 많이 만나고 싶습니다!',d:1},
+  {n:'한수정',y:92,c:'KT',j:'네트워크 엔지니어',h:'테니스, 영화보기',m:'만나서 반갑습니다!',d:1},
+  {n:'함형진',y:84,c:'신한카드',j:'마케팅 추진TF',h:'여행, 인테리어',m:'수리적기초 수업 너무 어려워요!',d:1},
+  {n:'허수정',y:98,c:'쿠팡',j:'데이터분석',h:'산책, 맛집탐방, 디저트탐방',m:'앞으로 잘 부탁드리겠습니다.',d:1},
+  // AI 데이터사이언스학과
+  {n:'강민혁',y:'02',c:'나이스평가정보',j:'솔루션 개발(인턴)',h:'축구, 야구장 직관',m:'잘 부탁드립니다!',d:2},
+  {n:'강연아',y:88,c:'LG CNS',j:'SAP CO Consultant',h:'인테리어, 제빵',m:'만나서 반갑습니다!',d:2},
+  {n:'권동인',y:86,c:'LG CNS',j:'클라우드 아키텍처',h:'컨텐츠 소비',m:'앞으로 일년 반 잘 부탁드려요.',d:2},
+  {n:'금강현',y:95,c:'LG CNS',j:'Software Engineer',h:'개발',m:'다같이 화이팅하면서 알찬 시간 보내요!',d:2},
+  {n:'김광연',y:82,c:'LG CNS Entrue Consulting',j:'AX PI그룹장',h:'여행, 요리, 풋살, 야구',m:'운영진 분들 고생 많으십니다!',d:2},
+  {n:'김규훈',y:89,c:'LG CNS',j:'Software 기획자',h:'누워서 유튜브 넷플',m:'많은 분들과 잘지냈으면 좋겠습니다.',d:2},
+  {n:'김영신',y:88,c:'LG CNS',j:'Software Engineer',h:'낚시',m:'다음에는 꼭 참석할게요!',d:2},
+  {n:'김용래',y:86,c:'LG CNS',j:'Software Engineer',h:'게임, 독서',m:'즐거운 대학원 생활 되시길 바랍니다.',d:2},
+  {n:'김태유',y:77,c:'LG CNS',j:'IT영업 (화학/전지)',h:'아이 숙제 보조, 맥주',m:'육아로 출석률이 떨어질 수 있으나 잘 부탁드립니다!',d:2},
+  {n:'송채희',y:'04',c:'학생',j:'-',h:'영화 보기, 베이킹',m:'앞으로 잘 부탁드립니다!',d:2},
+  {n:'신성현',y:83,c:'LG CNS',j:'Software Engineer',h:'수영, 러닝',m:'모두 화이팅하시고 잘 부탁드립니다.',d:2},
+  {n:'오윤지',y:'01',c:'PR 컨설팅',j:'인턴',h:'요가, 카페 탐방',m:'만나서 반갑습니다!',d:2},
+  {n:'이상원',y:82,c:'LG CNS',j:'AX 애플리케이션팀장',h:'골프, 웹소설, 먹거리 탐방',m:'좋은 인연 이어갔으면 합니다!',d:2},
+  {n:'임현섭',y:83,c:'LG CNS',j:'아키텍처',h:'운동(테니스, 골프), 영화',m:'모두 화이팅입니다!',d:2},
+  {n:'조진규',y:99,c:'(주) 아고란',j:'강사 및 전략기획실 사원',h:'축구, 야구, 골프',m:'인사 열심히 드릴 테니 잘 받아주세요!',d:2},
+  {n:'진유리',y:99,c:'컬리',j:'데이터분석',h:'춤, 스쿼시',m:'AI데이터사이언스학과 분들 차차 인사 나누어요.',d:2},
+];
+const INTERESTS = [
+  {emoji:'✈️',title:'여행',members:['김준규','김광연','박진석','용상혁','최종현','김태원','함형진','조연진','김요한','김민정','이유나','이준범']},
+  {emoji:'🎾',title:'테니스',members:['송원석','박성혁','이서영','한수정','임현섭','정재연','금강현']},
+  {emoji:'🏋️',title:'헬스',members:['송원석','용상혁','최종현','전민호','김재혁','이서영','박성혁']},
+  {emoji:'🎬',title:'영화/OTT',members:['한수정','전민호','김요한','임현섭','김민정','송채희','김규훈']},
+  {emoji:'⚾',title:'야구',members:['김광연','송원석','전민호','강민혁','조진규','최지환']},
+  {emoji:'🏃',title:'러닝',members:['김주희','용상혁','신성현','이준범','박성천']},
+  {emoji:'📚',title:'독서',members:['김한솔','김소현','김용래','안동주','오성민']},
+  {emoji:'🏊',title:'수영',members:['박성혁','박진석','최종현','신성현']},
+  {emoji:'⛳',title:'골프',members:['조진규','임현섭','김재혁','이상원']},
+  {emoji:'🎮',title:'게임',members:['송원석','김태원','김용래','최지환']},
+  {emoji:'🍳',title:'요리/베이킹',members:['이예솔','김광연','김재혁','강연아','송채희','이유나']},
+  {emoji:'🚶',title:'산책',members:['허수정','김한솔','김유진','오성민','박성천']},
+  {emoji:'🍷',title:'와인',members:['김소현','이준범']},
+  {emoji:'⚽',title:'축구',members:['박성혁','강민혁','조진규']},
+  {emoji:'📈',title:'미국주식',members:['성기석','최지환']},
+  {emoji:'🏠',title:'인테리어',members:['함형진','강연아']},
+  {emoji:'🎵',title:'음악/악기',members:['이예솔','조연진']},
+  {emoji:'💃',title:'춤',members:['진유리']},
+];
+
+// 이름 → 그라디언트 매핑
+const GRADIENTS = [
+  'linear-gradient(135deg, #FF6B9D, #FF8E53)',
+  'linear-gradient(135deg, #6C63FF, #00D2FF)',
+  'linear-gradient(135deg, #FFD93D, #FF8E53)',
+  'linear-gradient(135deg, #00D2FF, #6C63FF)',
+  'linear-gradient(135deg, #FF6B9D, #6C63FF)',
+  'linear-gradient(135deg, #00FF88, #00D2FF)',
+  'linear-gradient(135deg, #FFD93D, #FF6B9D)',
+  'linear-gradient(135deg, #FF8E53, #FFD93D)',
+];
+function gradFor(name) {
+  let h = 0; for (let i=0;i<name.length;i++) h = (h*31 + name.charCodeAt(i)) >>> 0;
+  return GRADIENTS[h % GRADIENTS.length];
+}
+function avatarFor(name) { return name.slice(-2); }
+// ===== Render Members =====
+function renderMembers(filter='') {
+  const f = filter.trim().toLowerCase();
+  const match = m => !f || m.n.toLowerCase().includes(f) || m.c.toLowerCase().includes(f) || m.j.toLowerCase().includes(f) || m.h.toLowerCase().includes(f);
+  const d1 = MEMBERS.filter(m => m.d===1 && match(m)).sort((a,b)=>a.n.localeCompare(b.n,'ko'));
+  const d2 = MEMBERS.filter(m => m.d===2 && match(m)).sort((a,b)=>a.n.localeCompare(b.n,'ko'));
+  const grid1 = document.getElementById('dept1Grid');
+  const grid2 = document.getElementById('dept2Grid');
+  document.getElementById('dept1Count').textContent = d1.length;
+  document.getElementById('dept2Count').textContent = d2.length;
+  grid1.innerHTML = d1.length ? d1.map(cardHTML).join('') : '<div class="empty">검색 결과가 없어요</div>';
+  grid2.innerHTML = d2.length ? d2.map(cardHTML).join('') : '<div class="empty">검색 결과가 없어요</div>';
+  document.querySelectorAll('.member-card').forEach(c => {
+    c.addEventListener('mousemove', e => {
+      const r = c.getBoundingClientRect();
+      c.style.setProperty('--mx', ((e.clientX-r.left)/r.width*100)+'%');
+      c.style.setProperty('--my', ((e.clientY-r.top)/r.height*100)+'%');
+    });
+    c.addEventListener('click', () => openModal(c.dataset.name));
+  });
+}
+function cardHTML(m) {
+  return `<div class="member-card" data-name="${m.n}">
+    <div class="avatar" style="background:${gradFor(m.n)}">${avatarFor(m.n)}</div>
+    <div class="card-name">${m.n}</div>
+    <div class="card-info">${m.c} · ${m.j}</div>
+    <div class="card-meta">
+      <span class="chip ${m.d===1?'dept-1':'dept-2'}">${m.d===1?'융합':'AI'}</span>
+      <span class="chip">'${String(m.y).padStart(2,'0')}</span>
+    </div>
+  </div>`;
+}
+
+// ===== Render Interests =====
+function renderInterests() {
+  const grid = document.getElementById('interestGrid');
+  grid.innerHTML = INTERESTS.sort((a,b)=>b.members.length-a.members.length).map(i => `
+    <div class="interest-card">
+      <span class="emoji">${i.emoji}</span>
+      <div class="title">${i.title}</div>
+      <div class="count">${i.members.length}명</div>
+      <div class="members">${i.members.join(' · ')}</div>
+    </div>`).join('');
+}
+
+// ===== Modal =====
+function openModal(name) {
+  const m = MEMBERS.find(x => x.n===name); if (!m) return;
+  const dept = m.d===1?'융합데이터과학과':'AI 데이터사이언스학과';
+  const tagBg = m.d===1?'background:rgba(255,107,157,0.2);color:#ffb3cd':'background:rgba(0,210,255,0.2);color:#99ebff';
+  document.getElementById('modalContent').innerHTML = `
+    <button class="modal-close" onclick="closeModal()">×</button>
+    <div class="avatar-lg" style="background:${gradFor(m.n)}">${avatarFor(m.n)}</div>
+    <h3>${m.n}</h3>
+    <span class="modal-tag" style="${tagBg}">${dept} · '${String(m.y).padStart(2,'0')}년생</span>
+    <div class="modal-row"><div class="k">직장</div><div class="v">${m.c}</div></div>
+    <div class="modal-row"><div class="k">직무</div><div class="v">${m.j}</div></div>
+    <div class="modal-row"><div class="k">취미</div><div class="v">${m.h}</div></div>
+    <div class="modal-quote">"${m.m}"</div>`;
+  document.getElementById('modalBg').classList.add('show');
+}
+function closeModal() { document.getElementById('modalBg').classList.remove('show'); }
+document.getElementById('modalBg').addEventListener('click', e => { if (e.target.id==='modalBg') closeModal(); });
+document.addEventListener('keydown', e => { if (e.key==='Escape') closeModal(); });
+// ===== Tabs =====
+document.querySelectorAll('.nav-pill').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.nav-pill').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById(btn.dataset.tab).classList.add('active');
+    document.getElementById('searchWrap').style.display = btn.dataset.tab==='directory' ? '' : 'none';
+    if (btn.dataset.tab==='stats') animateBars();
+  });
+});
+
+// ===== Search =====
+document.getElementById('searchInput').addEventListener('input', e => renderMembers(e.target.value));
+
+// ===== Theme Toggle =====
+const themeBtn = document.getElementById('themeToggle');
+themeBtn.addEventListener('click', () => {
+  document.body.classList.toggle('light');
+  themeBtn.textContent = document.body.classList.contains('light') ? '☀️' : '🌙';
+});
+
+// ===== Scroll Progress =====
+window.addEventListener('scroll', () => {
+  const h = document.documentElement; const scrolled = (h.scrollTop) / (h.scrollHeight - h.clientHeight) * 100;
+  document.getElementById('scrollProgress').style.width = scrolled + '%';
+});
+
+// ===== Count Up =====
+function countUp() {
+  document.querySelectorAll('[data-count]').forEach(el => {
+    const target = +el.dataset.count; const dur = 1500; const start = performance.now();
+    function step(t) {
+      const p = Math.min((t-start)/dur, 1); const eased = 1-Math.pow(1-p,3);
+      el.textContent = Math.round(target*eased);
+      if (p<1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  });
+}
+
+// ===== Animate Bars + Donut =====
+function animateBars() {
+  document.querySelectorAll('.bar-fill').forEach(b => { b.style.width = b.dataset.w + '%'; });
+  // donut: 64% of circumference (2πr = 502.6)
+  const seg = document.getElementById('donutSeg1');
+  const c = 2 * Math.PI * 80;
+  seg.style.strokeDasharray = `${c*0.64} ${c}`;
+  seg.style.transition = 'stroke-dasharray 1.5s cubic-bezier(0.16,1,0.3,1)';
+}
+
+// ===== Init =====
+renderMembers();
+renderInterests();
+setTimeout(countUp, 200);
+</script>
+</body>
+</html>
